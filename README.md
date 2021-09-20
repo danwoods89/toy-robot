@@ -7,6 +7,7 @@
 1. Install Node.js and Visual Studio Code.
 1. Unzip toy-robot.zip to the desired location
 1. Open the toy-robot folder in Visual Studio Code.
+1. In the Visual Studio Code terminal, run _npm install_
 1. In the Visual Studio Code terminal, use the commands below:
 
 ### `npm run start`
