@@ -1,6 +1,6 @@
 # toy-robot
 
-**Demo:** [http://danwoods89.github.io/toy-robot](Live Demo) :rocket:
+**Demo:** [Live Demo](http://danwoods89.github.io/toy-robot) :rocket:
 
 ## Running the toy-robot locally
 
