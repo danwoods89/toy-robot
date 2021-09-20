@@ -1,5 +1,6 @@
 {
   "name": "toy-robot",
+  "homepage": "http://danwoods89.github.io/toy-robot",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -13,6 +14,7 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-scripts": "4.0.3",
+    "styled-components": "^5.3.1",
     "typescript": "^4.1.2",
     "web-vitals": "^1.0.1"
   },
@@ -20,7 +22,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
@@ -41,6 +45,8 @@
     ]
   },
   "devDependencies": {
-    "eslint-config-airbnb-typescript-prettier": "^4.2.0"
+    "@types/styled-components": "^5.1.14",
+    "eslint-config-airbnb-typescript-prettier": "^4.2.0",
+    "gh-pages": "^3.2.3"
   }
 }

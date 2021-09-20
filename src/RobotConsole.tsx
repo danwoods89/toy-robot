@@ -5,10 +5,48 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import styled from 'styled-components';
 import { ORIENTATION } from './constants';
 import { ACTIONS, initialState, robotReducer } from './reducer';
 
-const Console: React.FC = () => {
+const Container = styled.div`
+  background-color: rgba(66, 66, 66, 0.7);
+  width: 100%;
+  max-width: 400px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`;
+
+const ConsoleTextArea = styled.textarea`
+  display: block;
+  width: 100%;
+  height: 10em;
+  background-color: rgba(75, 75, 90, 0.7);
+  resize: none;
+  margin-bottom: 1em;
+  border-radius: 10px;
+  padding: 15px 15px;
+  outline: none;
+  border: none;
+  color: white;
+`;
+
+const ConsoleTextInput = styled.input`
+  display: block;
+  width: 100%;
+  background-color: rgba(75, 75, 90, 0.7);
+  color: white;
+  border-radius: 10px;
+  padding: 0 15px;
+  height: 30px;
+  outline: none;
+  border: none;
+`;
+
+const RobotConsole: React.FC = () => {
   const [consoleOutput, setConsoleOutput] = useState<string[]>([]);
   const [consoleInput, setConsoleInput] = useState<string>();
   const [robotState, dispatch] = useReducer(robotReducer, initialState);
@@ -119,16 +157,21 @@ const Console: React.FC = () => {
   };
 
   return (
-    <>
-      <textarea value={consoleOutput.join('\n')} readOnly ref={consoleRef} />
-      <input
+    <Container>
+      <ConsoleTextArea
+        value={consoleOutput.join('\n')}
+        readOnly
+        ref={consoleRef}
+      />
+      <ConsoleTextInput
         type="text"
         value={consoleInput || ''}
         onChange={handleConsoleInputChange}
         onKeyDown={handleConsoleInputKeyDown}
+        placeholder="Input a command and press enter"
       />
-    </>
+    </Container>
   );
 };
 
-export default Console;
+export default RobotConsole;
