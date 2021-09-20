@@ -1,105 +1,198 @@
-import { DIRECTIONS, Orientation, Robot } from "./constants";
-import utils from "./utils";
+import { DIRECTIONS, ORIENTATION } from './constants';
+import { Coordinates, Robot } from './types';
+import utils from './utils';
 
 export enum ACTIONS {
-  MOVE = "MOVE",
-  PLACE = "PLACE",
-  LEFT = "LEFT",
-  RIGHT = "RIGHT",
-  REPORT = "REPORT",
+  MOVE = 'MOVE',
+  PLACE = 'PLACE',
+  LEFT = 'LEFT',
+  RIGHT = 'RIGHT',
+  REPORT = 'REPORT',
+  RESET = 'RESET',
+}
+
+export interface PlaceAction {
+  coordinates: Coordinates;
+  orientation: ORIENTATION | null;
 }
 
 type Action =
-  | { type: ACTIONS.MOVE; payload: Robot }
-  | { type: ACTIONS.PLACE; payload: Robot }
-  | { type: ACTIONS.LEFT; payload: Robot }
-  | { type: ACTIONS.RIGHT; payload: Robot }
-  | { type: ACTIONS.REPORT; payload: Robot };
+  | { type: ACTIONS.MOVE }
+  | { type: ACTIONS.PLACE; payload: PlaceAction }
+  | { type: ACTIONS.LEFT }
+  | { type: ACTIONS.RIGHT }
+  | { type: ACTIONS.REPORT }
+  | { type: ACTIONS.RESET };
 
-export const robotReducer = (action: Action) => {
+export const initialState: State = {
+  robot: {
+    orientation: ORIENTATION.NORTH,
+    coordinates: { x: 0, y: 0 },
+    exists: false,
+  },
+  error: false,
+  message: '',
+};
+
+interface State {
+  robot: Robot;
+  error: boolean;
+  message: string;
+}
+
+export const robotReducer = (state: State, action: Action): State => {
   switch (action.type) {
     case ACTIONS.MOVE: {
-      switch (action.payload.orientation) {
-        case Orientation.NORTH:
-          if (utils.validateCommand(action.payload)) {
-            return {
-              ...action.payload,
-              coordinates: {
-                ...action.payload.coordinates,
-                y: action.payload.coordinates.y + 1,
-              },
-            };
-          } else {
-            return action.payload;
+      switch (state.robot.orientation) {
+        case ORIENTATION.NORTH: {
+          const coordinates: Coordinates = {
+            ...state.robot.coordinates,
+            y: state.robot.coordinates.y + 1,
+          };
+          const newRobot: Robot = { ...state.robot, coordinates };
+          if (utils.validateCommand(newRobot)) {
+            return { robot: newRobot, error: false, message: '' };
           }
-        case Orientation.SOUTH:
-          if (utils.validateCommand(action.payload)) {
-            return {
-              ...action.payload,
-              coordinates: {
-                ...action.payload.coordinates,
-                y: action.payload.coordinates.y - 1,
-              },
-            };
-          } else {
-            return action.payload;
+          return {
+            ...state,
+            error: true,
+            message: 'Invalid move - outside y axis boundary.',
+          };
+        }
+        case ORIENTATION.SOUTH: {
+          const coordinates: Coordinates = {
+            ...state.robot.coordinates,
+            y: state.robot.coordinates.y - 1,
+          };
+          const newRobot: Robot = { ...state.robot, coordinates };
+          if (utils.validateCommand(newRobot)) {
+            return { robot: newRobot, error: false, message: '' };
           }
-        case Orientation.EAST:
-          if (utils.validateCommand(action.payload)) {
-            return {
-              ...action.payload,
-              coordinates: {
-                ...action.payload.coordinates,
-                x: action.payload.coordinates.x + 1,
-              },
-            };
-          } else {
-            return action.payload;
+          return {
+            ...state,
+            error: true,
+            message: 'Invalid move - outside y axis boundary.',
+          };
+        }
+        case ORIENTATION.EAST: {
+          const coordinates: Coordinates = {
+            ...state.robot.coordinates,
+            x: state.robot.coordinates.x + 1,
+          };
+          const newRobot: Robot = { ...state.robot, coordinates };
+          if (utils.validateCommand(newRobot)) {
+            return { robot: newRobot, error: false, message: '' };
           }
-        case Orientation.WEST:
-          if (utils.validateCommand(action.payload)) {
-            return {
-              ...action.payload,
-              coordinates: {
-                ...action.payload.coordinates,
-                x: action.payload.coordinates.x - 1,
-              },
-            };
-          } else {
-            return action.payload;
+          return {
+            ...state,
+            error: true,
+            message: 'Invalid move - outside x axis boundary.',
+          };
+        }
+        case ORIENTATION.WEST: {
+          const coordinates: Coordinates = {
+            ...state.robot.coordinates,
+            x: state.robot.coordinates.x - 1,
+          };
+          const newRobot: Robot = { ...state.robot, coordinates };
+          if (utils.validateCommand(newRobot)) {
+            return { robot: newRobot, error: false, message: '' };
           }
+          return {
+            ...state,
+            error: true,
+            message: 'Invalid move - outside x axis boundary.',
+          };
+        }
         default:
-          break;
+          throw new Error('Invalid direction.');
       }
-      break;
     }
     case ACTIONS.PLACE: {
-      if (action.payload.exists) {
-        return { ...action.payload, coordinates: action.payload.coordinates };
-      } else {
+      if (state.robot.exists) {
+        const newRobot: Robot = {
+          ...state.robot,
+          coordinates: action.payload.coordinates,
+        };
+        if (utils.validateCommand(newRobot)) {
+          return {
+            robot: newRobot,
+            error: false,
+            message: '',
+          };
+        }
         return {
+          ...state,
+          error: true,
+          message:
+            'Invalid robot placement. Robot must be placed within the boundaries.',
+        };
+      }
+      if (action.payload.orientation) {
+        const newRobot: Robot = {
+          ...state.robot,
           coordinates: action.payload.coordinates,
           orientation: action.payload.orientation,
           exists: true,
         };
+
+        if (utils.validateCommand(newRobot)) {
+          return {
+            robot: newRobot,
+            error: false,
+            message: '',
+          };
+        }
+        return {
+          ...state,
+          error: true,
+          message:
+            'Invalid robot placement. Robot must be placed within the boundaries.',
+        };
       }
+      return {
+        ...state,
+        error: true,
+        message: 'An orientation must be provided for first placements.',
+      };
     }
     case ACTIONS.LEFT: {
       return {
-        ...action.payload,
-        orientation:
-          DIRECTIONS[(DIRECTIONS.indexOf(action.payload.orientation) + 1) % 4],
+        ...state,
+        robot: {
+          ...state.robot,
+          orientation:
+            DIRECTIONS[
+              (DIRECTIONS.indexOf(state.robot.orientation) + 1) %
+                DIRECTIONS.length
+            ],
+        },
       };
     }
     case ACTIONS.RIGHT: {
       return {
-        ...action.payload,
-        orientation:
-          DIRECTIONS[DIRECTIONS.indexOf(action.payload.orientation) - 1],
+        ...state,
+        robot: {
+          ...state.robot,
+          orientation:
+            DIRECTIONS[
+              (DIRECTIONS.indexOf(state.robot.orientation) +
+                DIRECTIONS.length -
+                1) %
+                DIRECTIONS.length
+            ],
+        },
       };
     }
     case ACTIONS.REPORT: {
-      return `${action.payload.coordinates.x}, ${action.payload.coordinates.y}, ${action.payload.orientation}`;
+      return state;
+    }
+    case ACTIONS.RESET: {
+      return {
+        ...state,
+        error: false,
+        message: '',
+      };
     }
     default: {
       throw new Error(`Unspecified action type.`);
